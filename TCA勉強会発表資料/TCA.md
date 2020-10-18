@@ -5,7 +5,7 @@ theme: gaia
 paginate: true
 backgroundColor: #fff
 ---
-# TCA Examples の Search プロジェクトから知る TCA のテストの便利さ
+# Examples の Search プロジェクトから学ぶ TCA
 
 ---
 # 自己紹介
@@ -30,6 +30,11 @@ backgroundColor: #fff
 
 ---
 ![bg height:700](search.gif)
+
+---
+# TCA の全体像
+
+TCA のフロー図を入れる
 
 ---
 # ファイルツリー
@@ -60,7 +65,7 @@ Search のファイルツリー
 TCA の色々な要素*： State, Action, Environment, Reducer, View
 
 ---
-# WeatherClient の models
+# Models
 
 ```swift
 struct Location: Decodable, Equatable {
@@ -70,7 +75,7 @@ struct Location: Decodable, Equatable {
 ```
 
 ---
-# WeatherClient の models
+# Models
 
 ```swift
 struct LocationWeather: Decodable, Equatable {
@@ -88,7 +93,7 @@ struct LocationWeather: Decodable, Equatable {
 ```
 
 ---
-# WeatherClient の API client interface
+# API client interface
 
 ```swift
 struct WeatherClient {
@@ -102,16 +107,16 @@ struct WeatherClient {
 Effectの説明〜〜〜〜〜〜〜〜
 
 ---
-# WeatherClient の API implementation
+# API implementation / 全体像
 
 ```swift 
 extension WeatherClient {
   static let live = WeatherClient(
     searchLocation: { query in
-      // ...
+      ...
     },
     weather: { id in
-      // ...
+      ...
     })
 }
 ```
@@ -120,7 +125,7 @@ extension WeatherClient {
 ありますがそちらは後ほど紹介します
 
 ---
-# WeatherClient の API implementation
+# API implementation / searchLocation
 
 ```swift
 extension WeatherClient {
@@ -136,19 +141,19 @@ extension WeatherClient {
         .eraseToEffect()
     },
     weather: { id in
-      // ...
+      ...
     })
 }
 ```
 
 ---
-# WeatherClient の API implementation
+# API implementation / weather
 
 ```swift
 extension WeatherClient {
   static let live = WeatherClient(
     searchLocation: { query in
-      // ...
+      ...
     },
     weather: { id in
       let url = URL(string: "https://www.metaweather.com/api/location/\(id)")!
@@ -163,7 +168,7 @@ extension WeatherClient {
 ```
 
 ---
-# SearchView の State, Action
+# State, Action
 
 ```swift
 struct SearchState: Equatable {
@@ -182,7 +187,7 @@ enum SearchAction: Equatable {
 ```
 
 ---
-# SearchView の Environment
+# Environment
 
 ```swift
 struct SearchEnvironment {
@@ -192,7 +197,7 @@ struct SearchEnvironment {
 ```
 
 ---
-# SearchView の Reducer
+# Reducer
 
 ```swift
 let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
@@ -206,4 +211,125 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   case let .locationWeatherResponse(.success(locationWeather)):
   }
 }
+```
+
+---
+# View
+
+```swift
+struct SearchView: View {
+  let store: Store<SearchState, SearchAction>
+
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      ...
+    }
+  }
+```
+
+---
+# 検索 TextField の動作（View, State）
+
+- View
+```swift
+TextField("New York, San Francisco, ...",
+          text: viewStore.binding(
+          get: { $0.searchQuery }, send: SearchAction.searchQueryChanged)
+)
+```
+- State
+```swift
+struct SearchState: Equatable {
+  var searchQuery = ""
+}
+```
+---
+# 検索 TextField の動作（Reducer）
+
+```swift
+let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
+  state, action, environment in
+  switch action {
+  case .locationsResponse(.failure):
+  case let .locationsResponse(.success(response)):
+  case let .locationTapped(location):
+  case let .searchQueryChanged(query): <------------- これが呼ばれる
+  case let .locationWeatherResponse(.failure(locationWeather)):
+  case let .locationWeatherResponse(.success(locationWeather)):
+  }
+}
+```
+
+---
+# 検索 TextField の動作（Reducer）
+
+```swift
+case let .searchQueryChanged(query):
+  struct SearchLocationId: Hashable {}
+  state.searchQuery = query
+
+  guard !query.isEmpty else {
+    state.locations = []
+    state.locationWeather = nil
+    return .cancel(id: SearchLocationId())
+  }
+
+  return environment.weatherClient
+    .searchLocation(query)
+    .receive(on: environment.mainQueue)
+    .catchToEffect()
+    .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
+    .map(SearchAction.locationsResponse)
+```
+
+---
+# 検索 TextField の動作（Reducer）
+
+```swift
+let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
+  state, action, environment in
+  switch action {
+  case .locationsResponse(.failure): <-------------------- 失敗すればこれ
+  case let .locationsResponse(.success(response)): <------ 成功すればこれ
+  case let .locationTapped(location):
+  case let .searchQueryChanged(query):
+  case let .locationWeatherResponse(.failure(locationWeather)):
+  case let .locationWeatherResponse(.success(locationWeather)):
+  }
+}
+```
+---
+# 検索 TextField の動作（Reducer）
+
+- success
+```swift
+case let .locationsResponse(.success(response)):
+    state.locations = response
+    return .none
+```
+
+- failure
+```swift
+case .locationsResponse(.failure):
+  state.locations = []
+  return .none
+```
+
+---
+# 検索結果を押した後の動作
+
+```swift
+Button(action: { viewStore.send(.locationTapped(location)) }) {
+    HStack {
+      Text(location.title)
+
+      if viewStore.locationWeatherRequestInFlight?.id == location.id {
+        ActivityIndicator()
+      }
+    }
+  }
+
+  if location.id == viewStore.locationWeather?.id {
+    self.weatherView(locationWeather: viewStore.locationWeather)
+  }
 ```
