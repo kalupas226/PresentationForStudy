@@ -1,11 +1,14 @@
 ---
 marp: true
-_class: lead
 theme: gaia
 paginate: true
 backgroundColor: #fff
 ---
-# Redacted を TCA で快適にする
+<!--
+_class: lead
+_paginate: false
+-->
+# Redacted を TCA でスマートに使う
 
 ---
 # Redacted とは？
