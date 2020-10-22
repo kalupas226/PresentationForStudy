@@ -8,3 +8,6 @@ backgroundColor: #fff
 # Redacted を TCA で快適にする
 
 ---
+# Redacted とは？
+
+---

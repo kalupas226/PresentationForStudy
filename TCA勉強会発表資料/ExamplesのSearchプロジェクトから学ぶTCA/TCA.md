@@ -1,11 +1,15 @@
 ---
 marp: true
-_class: lead
 theme: gaia
 paginate: true
 backgroundColor: #fff
 ---
-# Examples の Search プロジェクトから学ぶ TCA
+<!--
+_class: lead
+_footer:  iOSアプリ開発のためのFunctional Architecture情報共有会
+_paginate: false
+-->
+# Examples の Search プロジェクトから学ぶ The Composable Architecture
 
 ---
 # 自己紹介
@@ -18,7 +22,7 @@ backgroundColor: #fff
 
 ---
 # 今回紹介する題材
-- TCA の Exmaples の Search アプリ
+- TCA(The Composable Architecture) の Exmaples の Search アプリ
   - 地名を入力する
   - 300ms 何も打たない
   - API Request が飛んで、該当する地名があれば表示される
