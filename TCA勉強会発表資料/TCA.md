@@ -11,11 +11,10 @@ backgroundColor: #fff
 # 自己紹介
 ![bg right:30% width:400](kalupas.jpg)
 - アイカワ（@kalupas0930）
-- 名刺管理サービスを作っている
-新卒 iOS エンジニア
-- 函館出身です
+- 新卒 iOS エンジニア
+- 函館出身
 - 最近は Flutter, 機械学習の勉強をしてます
-- SwiftUI と Combine 最近勉強し始めました
+- SwiftUI と Combine もまだまだ勉強中です
 
 ---
 # 今回紹介する題材
@@ -41,10 +40,10 @@ backgroundColor: #fff
 - 全体のファイルツリー
 
 ```json
-\Search
-|---\Search.xcodeproj
-|---\Search // 今回は主にここと
-|---\SearchTests // ここを紹介します
+/Search
+|--- /Search.xcodeproj
+|--- /Search // 今回は主にここと
+|--- /SearchTests // ここを紹介します
 |--- README.md
 ```
 
@@ -53,7 +52,7 @@ backgroundColor: #fff
 Search のファイルツリー
 
 ```json
-\Search
+/Search
 |--- SearchView.swift // TCA の色々な要素* が詰め込まれています
 |--- ActivityIndicator.swift // ただの ActivityIndicator
 |--- SceneDelegate.swift // SearchView の初期化
@@ -62,32 +61,24 @@ Search のファイルツリー
 |--- Assets.xcassets
 ```
 
-TCA の色々な要素*： State, Action, Environment, Reducer, View
+- TCA の色々な要素*
+  - State, Action, Environment, Reducer, Effect, View
 
 ---
 # Models
 
 ```swift
-struct Location: Decodable, Equatable {
+struct Location: Decodable, Equatable { // <- 今回は主にこちらだけ気にします
   var id: Int
   var title: String
 }
-```
 
----
-# Models
-
-```swift
 struct LocationWeather: Decodable, Equatable {
   var consolidatedWeather: [ConsolidatedWeather]
   var id: Int
-  
+
   struct ConsolidatedWeather: Decodable, Equatable {
-    var applicableDate: Date
-    var maxTemp: Double
-    var minTemp: Double
-    var theTemp: Double
-    var weatherStateName: String?
+    ...
   }
 }
 ```
@@ -104,7 +95,8 @@ struct WeatherClient {
 }
 ```
 
-Effectの説明〜〜〜〜〜〜〜〜
+Effect はアプリケーションの副作用です。
+TCA において副作用は Effect にのみ発生すべきとされています。
 
 ---
 # API implementation / 全体像
@@ -195,6 +187,10 @@ struct SearchEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 ```
+Environment で定義するのは以下のようなものです
+- API Client, Scheduler などの依存関係
+- 自分は、外部から注入するとテストが楽になるものを定義する
+というイメージを持っています
 
 ---
 # Reducer
@@ -226,6 +222,8 @@ struct SearchView: View {
     }
   }
 ```
+
+View では `store` を定義して、`ViewStore` 経由でアクセスします
 
 ---
 # 検索 TextField の動作（View, State）
@@ -316,20 +314,186 @@ case .locationsResponse(.failure):
 ```
 
 ---
-# 検索結果を押した後の動作
+# 次は SearchTests について
+
+SearchTests に関係するファイルツリー
+
+```json
+/Search
+|--- SearchView.swift // 先ほど紹介した各ロジックを使用します
+|--- WeatherClient.swift // mock の API Client が定義されています
+/SearchTests
+|--- SearchTests.swift // テスト本体です
+```
+
+---
+# SearchTests 内で使用する変数
 
 ```swift
-Button(action: { viewStore.send(.locationTapped(location)) }) {
-    HStack {
-      Text(location.title)
+private let mockLocations = [
+  Location(id: 1, title: "Brooklyn"),
+  Location(id: 2, title: "Los Angeles"),
+  Location(id: 3, title: "San Francisco"),
+]
+```
 
-      if viewStore.locationWeatherRequestInFlight?.id == location.id {
-        ActivityIndicator()
-      }
-    }
+---
+# SearchTests 内で使用する Mock Client
+
+```swift
+extension WeatherClient {
+  static func mock(
+    searchLocation: @escaping (String) -> Effect<[Location], Failure> = { _ in
+      fatalError("Unmocked")
+    },
+    weather: @escaping (Int) -> Effect<LocationWeather, Failure> = { _ in fatalError("Unmocked") }
+  ) -> Self {
+    Self(
+      searchLocation: searchLocation,
+      weather: weather
+    )
   }
+}
+```
 
-  if location.id == viewStore.locationWeather?.id {
-    self.weatherView(locationWeather: viewStore.locationWeather)
+---
+# SearchTests の全体感
+
+```swift
+import Combine
+import ComposableArchitecture
+import XCTest
+
+@testable import Search
+
+class SearchTests: XCTestCase {
+  // テスト用スケジューラー
+  let scheduler = DispatchQueue.testScheduler
+
+  func testSearchAndClearQuery() { ... }
+  func testSearchFailure() { ... }
+  func test...() { ... }
+```
+
+---
+## 今回紹介するテスト
+
+- `func testSearchAndClearQuery() { ... }`
+  - 検索が成功し、その後に検索クエリを消した時の動作のテスト
+- `func testSearchFailure() {...}`
+  - 検索が失敗した時の動作のテスト
+
+---
+## 検索成功・その後にクエリを消す動作のテスト
+
+```swift
+func testSearchAndClearQuery() {
+    let store = TestStore(
+      initialState: .init(),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: .mock(),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.assert(
+      ...
+    )
   }
 ```
+
+---
+## 検索成功・その後にクエリを消す動作のテスト
+
+```swift
+store.assert(
+  .environment { // mock client に 成功時の searchLocation を注入
+    $0.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+  },
+  .send(.searchQueryChanged("S")) { // "S" で検索する Action を実行
+    $0.searchQuery = "S"
+  },
+  .do { self.scheduler.advance(by: 0.3) }, // 300ms 時間を進める
+  .receive(.locationsResponse(.success(mockLocations))) { // 成功であることを確認
+    $0.locations = mockLocations // state の locations が 結果と等しいことを確認
+  },
+  .send(.searchQueryChanged("")) { // 検索クエリを空にする Action を実行
+    $0.locations = [] // state の locations は空になり
+    $0.searchQuery = ""　// state の searchQuery も空になっていることを確認
+  }
+)
+```
+
+---
+## 先ほどのテストをわざと失敗させてみます
+
+```swift
+store.assert(
+  .environment {
+    $0.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+  },
+  .send(.searchQueryChanged("S")) {
+    $0.searchQuery = "Failed" // わざと違う文字（Failed）で失敗させる！
+  },
+  .do { self.scheduler.advance(by: 0.3) },
+  .receive(.locationsResponse(.success(mockLocations))) {
+    $0.locations = mockLocations
+  },
+  .send(.searchQueryChanged("")) {
+    $0.locations = []
+    $0.searchQuery = ""
+  }
+)
+```
+
+---
+## こんな感じでわかりやすく表示してくれます
+
+![bg height:400](error.png)
+
+---
+## 検索が失敗した時の動作のテスト
+
+```swift
+func testSearchFailure() {
+    let store = TestStore(
+      initialState: .init(),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: .mock(),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.assert(
+      ...
+    )
+  }
+```
+
+---
+## 検索が失敗した時の動作のテスト
+
+```swift
+store.assert(
+  .environment { // mock client に 失敗時の searchLocation を注入
+    $0.weatherClient.searchLocation = { _ in Effect(error: .init()) }
+  },
+  .send(.searchQueryChanged("S")) { // "S" で検索した時の Action を実行
+    $0.searchQuery = "S" // state の searchQuery が "S" であることを確認
+  },
+  .do { self.scheduler.advance(by: 0.3) }, // 300ms 進める
+  .receive(.locationsResponse(.failure(.init()))) // エラー時の Action であることを確認
+)
+```
+
+---
+## おわりに
+
+- 何となく雰囲気を掴んで頂けていれば幸いです
+- 基本的な流れが掴めたら、きっとあとは慣れるだけです
+  - まだ自分も慣れるほどコードを書いていないですが 😢
+- 今回紹介した以外にも色々できます
+  - 複数の Reducer を組み合わせて、複雑な状態を簡潔に表現できる
+  - UIKit でも使える
