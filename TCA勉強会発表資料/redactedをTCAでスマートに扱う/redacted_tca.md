@@ -29,6 +29,8 @@ Text("This is redacted")
     .redacted(reason: .placeholder)
 ```
 
+`redacted` Modifier を付けるだけ
+
 ![bg height:600 right:25%](redacted1.png)
 
 ---
@@ -364,6 +366,24 @@ let store: Store<ListItemState, ListItemAction>
 ```
 
 ---
+## ListItemView への Store の渡し方
+
+```swift
+ListItemView(
+    store: viewStore.isLoading
+        ? Store(
+        initialState: .init(listItem: placeholderListItem),
+        reducer: .empty,
+        environment: ()
+        ) : self.store
+)
+.redacted(reason: viewStore.isLoading ? .placeholder : [])
+```
+
+- `viewStore.isLoading` によって以下を渡す
+  - `true`: placeholder 用 Store
+  - `false`: 本物の Store
+---
 ## 一応 ListItemView の中身
 
 ```swift
@@ -401,3 +421,14 @@ let store: Store<ListItemState, ListItemAction>
 
 - 今回は扱う State を説明のために絞ったが、State が多くなれば
 なるほど TCA の恩恵を受けることができる
+
+---
+## おわりに
+- 今回発表した内容は Point-Free さんの Episode115~ の
+redacted についての記事を参考にしました :pray:
+  - https://www.pointfree.co/
+- 記事ではもっと深掘りされた内容が書かれています
+  - 扱う状態が増えた時の redacted の扱い方
+  - 画面も一つではなく複数
+- コンテンツの多くは有料かつ動画は英語ですが、スクリプトが
+あるので英語が苦手でも翻訳頼りで理解できます
