@@ -11,6 +11,15 @@ _paginate: false
 # redacted を TCA でスマートに扱う
 
 ---
+# 自己紹介
+![bg right:30% width:400](kalupas.jpg)
+- アイカワ（@kalupas0930）
+- 新卒 iOS エンジニア
+- 函館出身
+- 最近は Flutter, 機械学習の勉強をしてます
+- SwiftUI と Combine もまだまだ勉強中です
+
+---
 ## redacted とは？
 
 - SkeltetonView のようなもの
