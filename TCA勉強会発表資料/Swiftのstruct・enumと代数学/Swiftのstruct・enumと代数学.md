@@ -26,7 +26,7 @@ _paginate: false
         - #19 Algebraic Data Types: Generics and Recursion
 
 ---
-## そこで今回は三つのうちの一つををまとめます
+## そこで今回は三つのうちの一つをまとめます
 - **#4 Algebraic Data Types**
     - **代数データ型**
 - #9 Algebraic Data Types: Exponents
