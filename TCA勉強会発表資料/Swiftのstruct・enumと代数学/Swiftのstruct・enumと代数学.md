@@ -26,7 +26,7 @@ _paginate: false
         - #19 Algebraic Data Types: Generics and Recursion
 
 ---
-## そこで今回は三つのうち一つををまとめます
+## そこで今回は三つのうちの一つををまとめます
 - **#4 Algebraic Data Types**
     - **代数データ型**
 - #9 Algebraic Data Types: Exponents
@@ -34,8 +34,24 @@ _paginate: false
 - #19 Algebraic Data Types: Generics and Recursion
     - 代数データ型： Generics と再帰
 
+**※ 自分の解釈も多分に含まれます**
+
 ---
-## 早速構造体を見ていきます
+## 代数学とこのテーマの概要
+
+- 代数学（引用：物理のかぎしっぽ）
+    - 代数式：有限個の係数や未知数を「+, -, x, ÷, √」の五つの演算
+    だけを組み合わせて作った式（今回はこちらのみ）
+    - 未知数が代数式の形で表される方程式を代数方程式と呼ぶ
+    
+$$a_{0}x^n+a_{1}x^{n-1}+...+a_{n-1}x+a_{n} = 0$$
+
+- テーマの概要
+    - struct と enum を代数学を使って見ていこう（ざっくり）
+
+
+---
+## 早速 struct から見ていきます
 
 ```swift
 struct Pair<A, B> {
@@ -52,20 +68,16 @@ Pair<Bool, Bool>(first: false, second: false)
 ```
 
 ---
-## ↓ の enum を使ってみる
-
+## オリジナルの enum を作って適用してみる
+全部で六つのパターンが出来上がる
 ```swift
+// オリジナルの enum
 enum Three {
     case one
     case two
     case three
 }
-```
 
----
-## Three enum を利用したパターン
-
-```swift
 Pair<Bool, Three>(first: true, second: .one)
 Pair<Bool, Three>(first: true, second: .two)
 Pair<Bool, Three>(first: true, second: .three)
@@ -74,13 +86,12 @@ Pair<Bool, Three>(first: false, second: .two)
 Pair<Bool, Three>(first: false, second: .three)
 ```
 
-全部で 6 つのパターンができます
-
 ---
 ## Void についても見ていきます
 
 - Void は奇妙な型である
-    - 型と値を同じように参照できる
+    - 一つ目の理由：型と値を同じように参照できる
+    - Void は型で、() はVoid の値
 
 ```swift
 _: Void = Void()
@@ -89,12 +100,13 @@ _: () = ()
 ```
 
 ---
-## Void の値は一つ
+## Void が奇妙である二つ目の理由：値が一つ
 
-- Void は値を一つしか持たない
-    - () の実体は重要ではない
-    - Void の中にあるものを表す値があるだけで、() は何もできない
-    - 返り値を持たない関数宇賀、明示的に指定されていなくても Void を返すのはこのため
+- Void の値は一つ（「()」）しかない
+    - () には Void の中にあるものを表す値があるだけで、
+    () は何もできない
+    - 返り値を持たない関数が、明示的に指定されていなくても
+    こっそり Void を返すのはこのため
 
 ```swift
 func foo(_ x: Int) /* -> Void */ {
@@ -147,7 +159,7 @@ Pair<Bool, Never>(first: true, second: ???)
     - 例えば fatalError は Never を返す
     - コンパイラは fatalError を実行後のコードの全ての行と分岐は
     無意味になることを知っている
-    - それを使ってコードの網羅性を証明することができる
+    - それを使ってコードの網羅性を証明することもできる
 
 ---
 ## Pair<A, B> の値の数の関係はどうなっている？
@@ -192,8 +204,10 @@ struct Component {
 ```
 
 ---
-## 簡単のために今後以下のような表現をします
+### 型の名前を全て一掃する
 
+フィールドにどのようなデータが格納されているかだけに焦点を
+当てる
 ```swift
 // Pair<A, B>        = A * B
 // Pair<Bool, Bool>  = Bool * Bool
@@ -202,27 +216,28 @@ struct Component {
 // Pair<Bool, Never> = Bool * Never
 ```
 
-ざっくり、 `Pair<A, B>` は A と B の要素数の乗算であるという風に
-直感的に読めれば OK です
+- ざっくり、 `Pair<A, B>` は A と B の要素数の乗算であるという風に
+直感的に読むというイメージ
+- あくまで直感の助けになるので、このように読もうという話
 
 ---
 ## 値が有限でないものは？
+
+String には無限大の数が存在するが、 2 x ∞ と考えて良い
 
 ```swift
 // Pair<Bool, String> = Bool * String
 ```
 
-String には無限大の数が存在するが、 2 x ∞ と考えて良い
+↓ も無限大の要素数同士を掛け合わせていると考えることができる
 
 ```swift
 // String * [Int]
 // [String] * [[Int]]
 ```
 
-これも無限大の数同士を掛け合わせていると考えることができる
-
 ---
-## 型を代数的実体として捉える
+## 他の型も一掃して読んでみる
 
 ```swift
 // Never = 0
@@ -232,6 +247,7 @@ String には無限大の数が存在するが、 2 x ∞ と考えて良い
 - ↑ は Void, Never, Bool の名前を一掃して、型の中に含まれる値の数だけを表現している
 - つまり今は特定の型について考えているのではなく、抽象的な
 代数的実体を考えているだけ
+- Swift を代数的に捉えることが可能になった 🆒
 
 ---
 ## enum はどうか？
@@ -325,3 +341,380 @@ Either<Bool, Never> = 2 = 2 + 0
     - 二つの型の「または」を取る意味をカプセル化している
 
 ---
+## 気をつけるべきこと
+- Haskell, PureScript などの言語では Void の扱いが異なる
+    - Void で無人型（uninhabited type）を表現している
+    - Swift では Never に当たる
+    - 他の言語と混同しないように注意しましょう
+
+---
+## 一意な値を持つ型の名前として Unit を定義
+
+```swift
+struct Unit {} // Void の代わりとなるものを定義
+let unit = Unit()
+```
+
+- Unit を定義したことによる利点は ↓ のように拡張できること
+
+```swift
+extension Unit: Equatable {
+    static func == (lhs: Unit, rhs: Unit) -> Bool {
+        return true
+    }
+}
+```
+- これで等価な値だけを求める関数に値を渡すことができる
+
+---
+## Void は拡張できない
+- Void で extension しようとすると ↓ のようなエラーが起きる
+
+`Non-nominal type 'Void' cannot be extended`
+
+- なぜなら Void は空のタプルとして定義されている
+
+`typealias Void = ()`
+
+ - Void は Swift において non-nominal types ではなく、
+ structural types であるため、extension できない
+
+ ---
+ ## Unit と Never の定義を並べてみる
+
+ ```swift
+ struct Unit {}
+ enum Never {}
+ ```
+- 「フィールドを持たない struct」と「case を持たない enum」
+という対称性が明らかにある
+- しかし、struct には値が一つあって、enum には値がないのは
+なぜなのか？
+- Swift の型と代数の対応関係を持って、この謎を解くための
+質問をすることができる
+
+---
+## 空の struct と enum にはどんな値がある？
+例えば `let xs = [1, 2, 3]` のような整数の配列があったとして、
+↓ のような関数を定義するにはどうすれば良いか？
+
+```swift
+func sum(_ xs: [Int]) -> Int {
+  fatalError()
+}
+
+func product(_ xs: [Int]) -> Int {
+  fatalError()
+}
+
+sum(xs)
+product(xs)
+```
+
+---
+## 例えばこのように実装できる
+
+```swift
+func sum(_ xs: [Int]) -> Int {
+  var result: Int // result が定義されていないのでコンパイルはできない
+  for x in xs {
+    result += x
+  }
+  return result
+}
+
+func product(_ xs: [Int]) -> Int {
+  var result: Int // こちらも同じ。しかし、result には何を入れるべきなのか？
+  for x in xs {
+    result *= x
+  }
+  return result
+}
+```
+
+---
+## result には何を入れるべき？
+- この質問に答えるためには、和と積が満たすべき性質を理解する
+必要がある
+    - （もちろんこの問題は簡単であるため、理解せずとも解くことが
+    可能ではある）
+- そのためには、配列の連結について `sum` と `product` が
+どのように振る舞うかを考えれば良い
+
+---
+## sum と product にはどう振る舞って欲しい？
+
+普通の自然数の場合
+```swift
+sum([1, 2]) + sum([3]) == sum([1, 2, 3])
+product([1, 2]) * product([3]) == product([1, 2, 3])
+```
+
+もし空の配列を考えたら ↓ のようになるはず
+
+```swift
+sum([1, 2]) + sum([]) == sum([1, 2])
+product([1, 2]) * product([]) == product([1, 2])
+```
+
+---
+## 代数学を使って先ほどの問題が解ける
+さっきの例
+
+```swift
+sum([1, 2]) + sum([]) == sum([1, 2])
+product([1, 2]) * product([]) == product([1, 2])
+```
+
+このことから ↓ は強制される
+
+```swift
+sum([]) == 0 // 空の和型（enum）には値がない
+product([]) == 1 // 空の積型（struct）には値が一つしかない
+```
+
+代数学を使って簡単に解くことができた 👏
+
+---
+## 答えがわかったので関数に適用してみる
+
+```swift
+func sum(_ xs: [Int]) -> Int {
+  var result: Int = 0 // 空の和型なので 0 を初期値とする
+  for x in xs {
+    result += x
+  }
+  return result
+}
+
+func product(_ xs: [Int]) -> Int {
+  var result: Int = 1 // 空の積型なので 1 を初期値とする
+  for x in xs {
+    result *= x
+  }
+  return result
+}
+```
+
+---
+## 高いレベルでの型の構文についても考えていく
+- Swift の型と代数の対応関係を理解するための概念が構築できた
+- より高いレベルでもその直感を活かすことができるかを見ていく
+- その前に、簡単に始めていきましょう
+
+---
+## Void について見てみる
+
+- Void は 1 に対応し、代数の世界では 1 を掛けても何も起きない
+```swift
+// Void = 1
+// A * Void = A = Void * A
+```
+
+- 型の世界で考えると？
+    - struct のフィールドで Void を使用しても基本的には
+    型を変更せずに済むということ
+
+---
+## Never についても見てみる
+
+-  Never は 0 に対応し、代数の世界では 0 を掛けると 0 になる
+- 型の世界では ↓ のようになる
+
+```swift
+// Never = 0
+// A * Never = Never = Never * A
+```
+
+- つまり、型の世界において struct のフィールドに Never を入れると
+その構造体自体が Never 型になってしまうという結果になる
+- これは構造体を完全に消滅させることを意味する
+
+---
+## 和の場合はこのようになる
+- Never の場合
+    - 0 を追加する、つまり値を変更せずに残すという結果になる
+
+```swift
+// A + Never = A = Never + A
+```
+
+- 1 と追加するということは、Void を追加するという意味になる
+
+```swift
+// 1 + A = Void + A
+```
+---
+## 1 + A = Void + A
+
+この式は Either を使えば ↓ のように表すことができる
+
+```swift
+// Either<Void, A> {
+//   case left(())
+//   case right(A)
+//}
+```
+
+つまり、これは右辺に A の値が全て存在して、そこに一つの特殊な
+値である left(Void()) が隣接している型であると捉えられる
+
+---
+## Swift にはこのような型が存在している
+
+```swift
+// Either<Void, A> {
+//   case left(())
+//   case right(A)
+//}
+```
+
+これと似ている Swift の型 -> **Optional**
+```swift
+enum Optional<A> {
+    case none
+    case some(A)
+}
+```
+
+---
+## この考えを使えば？
+
+先ほど見た ↓ の式は
+
+```swift
+// 1 + A = Void + A
+```
+
+このように表すことができる
+
+```swift
+// Void + A = A?
+```
+
+---
+## 代数を用いることで型が簡潔になる例
+
+```swift
+// Either<Pair<A, B>, Pair<A, C>>
+        ↓
+// A * B + A * C
+```
+
+これは因数分解すると
+$$A(B+C)$$
+と表すことができる。つまり Swift では ↓ のように直せる
+
+```swift
+// Pair<A, Either<B, C>>
+```
+
+---
+## 他にも見てみる
+
+```swift
+// Pair<Either<A, B>, Either<A, C>>
+```
+
+数学の世界では
+$$(A+B)(A+C)$$
+
+これ以上因数分解はできないため、Swift でさらに簡潔に表すことは
+できない。もちろん展開して考えることはできる
+
+このように代数学はデータ構造を考えるための一つの手段となる
+
+---
+## 今日やったことは結局何の役に立つのか？
+- 今日は有効な Swift でさえない疑似コードの束を並べていただけ
+- 直感のためには役立つことがわかったが、エンジニアにとって
+メリットはあるのか？
+
+---
+## URLSession にそのメリットは隠れている
+
+```swift
+URLSession.shared
+.dataTask(with: url, 
+          completionHandler: (data: Data?,
+                              response: URLResponse?,
+                              error: Error?) -> Void)
+```
+
+- completionHandler は全て Optional の値を返す
+- また、Swift のタプルは単なる積であるため、以下のように考える
+
+```swift
+// (Data + 1) * (URLResponse + 1) * (Error + 1)
+```
+
+---
+## これを展開してみる
+
+```swift
+// (Data + 1) * (URLResponse + 1) * (Error + 1)
+//   = Data * URLResponse * Error // これは絶対起きてはいけない
+//     + Data * URLResponse
+//     + URLResponse * Error // これも同時に存在してはいけない（議論あり）
+//     + Data * Error // これも同時に存在してはいけない
+//     + Data
+//     + URLResponse
+//     + Error
+//     + 1 // これはただの Void であり、この場合は全て nil である
+```
+これを考慮するとすれば、予想されるケースを越える場合、必然的に
+fatalError が必要となってしまう
+
+---
+## 代数学の直感を使う
+直感を使って本当に欲しいものを表現してみると ↓ のようになる
+
+```swift
+// Data * URLResponse + Error
+```
+
+さっきまで使っていた型を利用すれば ↓ のような感じ
+
+```swift
+// Either<Pair<Data, URLResponse>, Error>
+```
+
+---
+## Swift の Result
+Swift では、先ほどのような状態を扱えるものがある
+
+```swift
+// Result<(Data, Response), Error>
+```
+
+- このように callback で適切な型を使用すれば、コンパイル時に
+許可される無効な状態の数を大幅に減らすことができる
+- callback で必要とされるロジックを単純化することができる
+
+---
+## Result 型についてさらに考えてみる
+失敗することのない特定の操作を行う場合は？
+
+```swift
+// Result<A, Never>
+```
+
+- ↑ でエラーケースは存在しないことが証明できた
+- キャンセルをサポートする非同期 API を使っている場合は？
+
+```swift
+// Result<A, Error>?
+```
+
+Optional にするだけ 🙆‍♂️
+
+---
+## 今日のまとめ
+
+- 代数学を使えば、複雑さをどうにかして処理し、自分のニーズに
+合った型に自然に誘導できることがわかった
+    - 代数学的な直感が日常のコードを改善できる可能性が見えた
+- 代数はまだまだ Swift に応用して考えることができる
+    - TCA の後々の章では指数・再帰などについても見ていくらしい
+- 代数学と Swift の関係性が見えた気分になって、Swiftの見方が
+広がった気がします
