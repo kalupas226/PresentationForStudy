@@ -1,0 +1,46 @@
+name: Post Label Comment
+
+on:
+  pull_request:
+    branches:
+    - feature/*
+    types: [labeled]
+jobs:
+  post_label_commnet:
+    name: Post Label Comment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Label Description
+        run: |
+          pullRequestNumber=${{ github.event.pull_request.number }}
+          data='{
+            "query": "query {
+              repository(owner: \"kalupas226\", name: \"PresentationForStudy\") {
+                pullRequest(number: '"${pullRequestNumber}"') {
+                  labels(first: 1) {
+                    nodes {
+                      ... on Label {
+                        description
+                      }
+                    }
+                  }
+                }
+              }
+            }"
+          }'
+          data=$(echo $data | awk '{printf $0}')
+          labelDescription=$(curl https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -d "${data}" | while read line
+          do
+            echo ${line##*\"description\":}
+          done | awk -F'"' '{print $2}')
+          echo "labelDescription=${labelDescription}" >> $GITHUB_ENV
+
+      - name: Post Comment
+        if: env.labelDescription != ''
+        env:
+          URL: ${{ github.event.pull_request.comments_url }}
+        run: |
+          curl -X POST \
+             -H "Authorization: token ${{ secrets.PERSONAL_API_TOKEN }}" \
+             -d "{\"body\": \"$(cat env.labelDescription)\"}" \
+             ${URL}
