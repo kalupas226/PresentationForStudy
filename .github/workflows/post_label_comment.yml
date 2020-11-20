@@ -50,7 +50,7 @@ jobs:
             "variables": { 
               "input": { 
                 "subjectId": "${pullRequestId}",
-                "body": "${labelDescription}"
+                "body": "'"${labelDescription}"'"
               }
             }
           }'
