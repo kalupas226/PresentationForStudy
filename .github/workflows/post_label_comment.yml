@@ -49,8 +49,8 @@ jobs:
             }", 
             "variables": { 
               "input": { 
-                "subjectId": '"${pullRequestId}"',
-                "body": "'"${labelDescription}"'"
+                "subjectId": "${pullRequestId}",
+                "body": "${labelDescription}"
               }
             }
           }'
