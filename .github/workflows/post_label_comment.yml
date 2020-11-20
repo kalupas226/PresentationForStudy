@@ -40,7 +40,6 @@ jobs:
         if: env.labelDescription != ''
         run: |
           pullRequestId=${{ github.event.pull_request.node_id }}
-          commentBody=${{ env.labelDescription }}
           
           data='{
            "query": "mutation ($input: AddCommentInput!) {
@@ -50,7 +49,7 @@ jobs:
             "variables": { 
               "input": { 
                 "subjectId": "'"${pullRequestId}"'",
-                "body": "'"${commentBody}"'"
+                "body": "'"${{ env.labelDescription }}"'"
               }
             }
           }'
