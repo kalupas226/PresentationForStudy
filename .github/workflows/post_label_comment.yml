@@ -49,7 +49,7 @@ jobs:
             }", 
             "variables": { 
               "input": { 
-                "subjectId": "${pullRequestId}",
+                "subjectId": "'"${pullRequestId}"'",
                 "body": "'"${labelDescription}"'"
               }
             }
