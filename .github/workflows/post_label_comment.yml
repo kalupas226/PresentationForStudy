@@ -44,11 +44,12 @@ jobs:
           data='{
            "query": "mutation ($input: AddCommentInput!) {
               addComment(input: $input) {
+                subject
               }
             }", 
             "variables": { 
               "input": { 
-                "subjectId": "'"${pullRequestId}"'",
+                "subjectId": "'"${ pullRequestId }"'",
                 "body": "'"${{ env.labelDescription }}"'"
               }
             }
