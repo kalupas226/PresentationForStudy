@@ -39,7 +39,7 @@ jobs:
       - name: Post Comment
         if: env.labelDescription != ''
         run: |
-          pullRequestId=${{ github.event.pull_request.repo.node_id }}
+          pullRequestId=${{ github.event.pull_request.node_id }}
           labelDescription=${{ env.labelDescription }}
           
           data='{
