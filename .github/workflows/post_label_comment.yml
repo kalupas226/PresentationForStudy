@@ -2,6 +2,9 @@ name: Post Label Comment
 
 on:
   pull_request:
+    branches: 
+      - master
+      - feature*
     types: [labeled]
 jobs:
   post_label_commnet:
@@ -35,10 +38,8 @@ jobs:
 
       - name: Post Comment
         if: env.labelDescription != ''
-        env:
-          URL: ${{ github.event.pull_request.comments_url }}
         run: |
-          pullRequestId=${{ github.event.pull_request.id }}
+          pullRequestId=${{ github.event.pull_request.repo.node_id }}
           labelDescription=${{ env.labelDescription }}
           
           data='{
@@ -48,8 +49,8 @@ jobs:
             }", 
             "variables": { 
               "input": { 
-                "body": "'"${labelDescription}"'",
-                "subjectId": "'"${pullRequestId}"'"
+                "subjectId": "'"${pullRequestId}"'",
+                "body": "'"${labelDescription}"'"
               }
             }
           }'
