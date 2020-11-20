@@ -44,7 +44,7 @@ jobs:
           data='{
            "query": "mutation ($input: AddCommentInput!) {
               addComment(input: $input) {
-                subject
+                clientMutationId
               }
             }", 
             "variables": { 
