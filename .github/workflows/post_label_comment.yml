@@ -40,5 +40,5 @@ jobs:
         run: |
           curl -X POST \
              -H "Authorization: token ${{ secrets.PERSONAL_API_TOKEN }}" \
-             -d "{\"body\": \"$(env.labelDescription)\"}" \
+             -d "{\"body\": \"${env.labelDescription}\"}" \
              ${URL}
