@@ -38,7 +38,20 @@ jobs:
         env:
           URL: ${{ github.event.pull_request.comments_url }}
         run: |
-          curl -X POST \
-             -H "Authorization: token ${{ secrets.PERSONAL_API_TOKEN }}" \
-             -d "{\"body\": \"${{env.labelDescription}}\" }" \
-             ${URL}
+          pullRequestId=${{ github.event.pull_request.id }}
+          labelDescription=${{ env.labelDescription }}
+          
+          data='{
+           "query": "mutation ($input: AddCommentInput!) {
+              addComment(input: $input) {
+              }
+            }", 
+            "variables": { 
+              "input": { 
+                "body": "'"${labelDescription}"'",
+                "subjectId": "'"${pullRequestId}"'"
+              }
+            }
+          }'
+          data=$(echo $data | awk '{printf $0}')
+          curl -g https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -H "Accept: application/vnd.github.elektra-preview" -d "${data}"
