@@ -49,8 +49,8 @@ jobs:
             }", 
             "variables": { 
               "input": { 
-                "subjectId": "'"${pullRequestId}"'",
-                "body": "'"${labelDescription}"'"
+                "subjectId": "MDExOlB1bGxSZXF1ZXN0NTI0NzU4OTI2",
+                "body": "hoge"
               }
             }
           }'
