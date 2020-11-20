@@ -3,7 +3,7 @@ name: Post Label Comment
 on:
   pull_request:
     branches:
-    - feature*
+      - feature*
     types: [labeled]
 jobs:
   post_label_commnet:
