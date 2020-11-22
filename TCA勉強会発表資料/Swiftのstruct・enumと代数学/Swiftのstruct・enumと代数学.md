@@ -376,7 +376,7 @@ extension Unit: Equatable {
 
 `typealias Void = ()`
 
- - Void は Swift において non-nominal types ではなく、
+ - タプル は Swift において nominal types ではなく、
  structural types であるため、extension できない
 
  ---
