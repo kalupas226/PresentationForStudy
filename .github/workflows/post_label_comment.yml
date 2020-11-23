@@ -51,4 +51,4 @@ jobs:
             }
           }'
           data=$(echo $data | awk '{printf $0}')
-          curl -g https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -H "Accept: application/json" -d "${data}"
+          curl -g https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -d "${data}"
