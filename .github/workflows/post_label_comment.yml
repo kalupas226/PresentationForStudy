@@ -1,14 +1,11 @@
-name: Post Label Comment
+name: Post Comment Label Description to PR
 
 on:
   pull_request:
-    branches: 
-      - master
-      - feature*
     types: [labeled]
 jobs:
   post_label_commnet:
-    name: Post Label Comment
+    name: Get Label Description and Post Comment
     runs-on: ubuntu-latest
     steps:
       - name: Get Label Description
@@ -36,10 +33,11 @@ jobs:
           done | awk -F'"' '{print $2}')
           echo "labelDescription=${labelDescription}" >> $GITHUB_ENV
 
-      - name: Post Comment
+      - name: Post Comment to PR
         if: env.labelDescription != ''
         run: |
           pullRequestId=${{ github.event.pull_request.node_id }}
+          labelDescription=${{ env.labelDescription }}
           
           data='{
            "query": "mutation ($input: AddCommentInput!) {
@@ -50,7 +48,7 @@ jobs:
             "variables": { 
               "input": { 
                 "subjectId": "'"${pullRequestId}"'",
-                "body": "'"${{ env.labelDescription }}"'"
+                "body": "'"${labelDescription}"'"
               }
             }
           }'
