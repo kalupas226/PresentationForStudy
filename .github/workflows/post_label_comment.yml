@@ -37,7 +37,6 @@ jobs:
         if: env.labelDescription != ''
         run: |
           pullRequestId=${{ github.event.pull_request.node_id }}
-          
           data='{
            "query": "mutation ($input: AddCommentInput!) {
               addComment(input: $input) {
