@@ -47,7 +47,7 @@ jobs:
             "variables": { 
               "input": { 
                 "subjectId": "'"${pullRequestId}"'",
-                "body": "'"${ env.labelDescription }"'"
+                "body": "'"${{ env.labelDescription }}"'"
               }
             }
           }'
