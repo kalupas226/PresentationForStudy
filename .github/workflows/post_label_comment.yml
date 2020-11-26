@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get Label Description
+        if: echo "${{ github.event.pull_request.body }}"" | grep Need Label's link
         run: |
           pullRequestNumber=${{ github.event.pull_request.number }}
           data='{
