@@ -35,7 +35,7 @@ jobs:
           echo "labelDescription=${labelDescription}" >> $GITHUB_ENV
 
       - name: Post Comment to PR
-        if: env.labelDescription != '' || env.labelDescription != 'data'
+        if: env.labelDescription != '' && env.labelDescription != 'data'
         run: |
           pullRequestId=${{ github.event.pull_request.node_id }}
           data='{
