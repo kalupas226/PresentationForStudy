@@ -6,7 +6,7 @@ on:
 jobs:
   post_label_commnet:
     name: Get Label Description and Post Comment
-    if: contains(github.event.pull_request.body, '- GitHub の Label Description をコメントで飛ばす')
+    if: contains(github.event.pull_request.body, 'GitHub Label Description on PR Comment')
     runs-on: ubuntu-latest
     steps:
       - name: Get Label Description
