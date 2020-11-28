@@ -6,7 +6,7 @@ on:
 jobs:
   post_label_commnet:
     name: Get Label Description and Post Comment
-    if: contains(github.event.pull_request.body, 'Need Label Link')
+    if: contains(github.event.pull_request.body, '- GitHub の Label Description をコメントで飛ばす')
     runs-on: ubuntu-latest
     steps:
       - name: Get Label Description
@@ -32,6 +32,7 @@ jobs:
           do
             echo ${line##*\"description\":}
           done | awk -F'"' '{print $2}')
+          labelDescription=$(echo $labelDescription | sed -e "s/data//g")
           echo "labelDescription=${labelDescription}" >> $GITHUB_ENV
 
       - name: Post Comment to PR
