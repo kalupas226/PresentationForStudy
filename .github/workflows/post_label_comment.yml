@@ -28,14 +28,14 @@ jobs:
             }"
           }'
           data=$(echo $data | awk '{printf $0}')
-          labelDescription=$(curl -f https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -d "${data}" | while read line
+          labelDescription=$(curl https://api.github.com/graphql -X POST -H "Authorization: bearer "${{ secrets.PERSONAL_API_TOKEN }}"" -H "Content-Type: application/json" -d "${data}" | while read line
           do
             echo ${line##*\"description\":}
           done | awk -F'"' '{print $2}')
           echo "labelDescription=${labelDescription}" >> $GITHUB_ENV
 
       - name: Post Comment to PR
-        if: env.labelDescription != ''
+        if: env.labelDescription != '' || env.labelDescription != 'data'
         run: |
           pullRequestId=${{ github.event.pull_request.node_id }}
           data='{
