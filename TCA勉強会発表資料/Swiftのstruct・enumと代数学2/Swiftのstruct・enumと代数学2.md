@@ -84,7 +84,7 @@ Either<Bool, Void>.right(())
 // 2(Bool) * 0(Never) = 0 パターン
 Pair<Bool, Never>(first: true, second: ???) // コンパイルできない
 
-// 2(Bool) + 0(Never) = 1 パターン
+// 2(Bool) + 0(Never) = 2 パターン
 Either<Bool, Never>.first(true)
 Either<Bool, Never>.first(false)
 Either<Bool, Never>.second(???) // コンパイルできない
